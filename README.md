@@ -64,65 +64,39 @@ C先提供可复现的下载/建库步骤和数据库入口；A-E在本机确认
 作业占位文件和原notebook中的TODO留给对应成员完成；本次只同步分工和流程，不预填分析、答案或报告。
 <!-- PS2_FINAL_TEAM_PLAN_END -->
 
-## Start here: Pixi environment preparation
+## Start here: Pixi environment
 
-本题使用 **Pixi**。B 优先完成仓库根目录的 `pixi.toml`，建立 `smoke` 环境，生成锁文件并更新本 README；同时配置 nbstripout。根配置目前仍为空，是待完成的作业，其他成员在 B 的正式配置合并后按更新后的步骤安装。环境可用后 C 进行数据准备，再开展并行分析；提交前各自在本机安装 hook。
-
-现有 `environment/pixi.toml` 和对应锁文件是可选的临时前置环境，供 B 配置时参考；它们不替代根目录的正式作业配置。以下原有启动及验证说明保留为临时环境参考。
-
-<details>
-<summary>可选临时前置环境：保留原有 Pixi 启动说明</summary>
-
-## Start here
-
-The PS2 setup uses Python 3.12 and a committed lock file. Four platforms are
-resolved: macOS Apple Silicon, macOS Intel, Linux x86-64, and Windows x86-64.
-Runtime validation is performed on macOS Apple Silicon; other platforms are
-dependency-resolved, not runtime-tested. Install Pixi from https://pixi.sh/ .
-
-From the repository root:
+本题使用仓库根目录的 **Pixi `smoke` 环境**。先安装 [Pixi](https://pixi.sh/)，然后在仓库根目录运行：
 
 ```bash
-pixi install --manifest-path environment/pixi.toml --locked -e smoke
-pixi run --manifest-path environment/pixi.toml -e smoke jupyter
+pixi install --locked -e smoke
+pixi run -e smoke jupyter
 ```
 
-Use the Python kernel from that environment. Do not use a global Python or a
-teammate's absolute environment path. Other CPU architectures require a team
-manifest/lock update first. See [CONTRIBUTING.md](CONTRIBUTING.md) for branches,
-reviews, notebook editing, and local-file rules.
+Notebook 使用该环境的 Python kernel。依赖和平台锁定在 `pixi.lock` 中；当前配置支持 macOS Apple Silicon/Intel、Linux x86-64 和 Windows x86-64。首次设置提交钩子：
 
-Use the explicit manifest commands above while the root manifest is empty.
-The assigned environment owner still completes the root `pixi.toml` with a
-`smoke` environment and configures the nbstripout hook. The bootstrap includes
-the nbstripout package, but DOES NOT implement or install the coursework hook.
-After the team completes the root manifest, regenerate its lock file and agree
-the switch to root commands in the same PR. Do not change both manifests independently.
+```bash
+pixi run -e smoke pre-commit install
+```
 
-</details>
+nbstripout 会在提交时清除 notebook 输出。手动检查所有文件可运行 `pixi run -e smoke pre-commit run --all-files`。更新 `pixi.toml` 后，请运行 `pixi lock` 并提交更新后的 `pixi.lock`。
 
 ## Files and unfinished coursework
 
 - `smoking_is_bad.ipynb`: original notebook and TODOs, unchanged.
 - `data/smoking_data.csv`: original supplied data, retained.
-- Root `pixi.toml` and `.pre-commit-config.yaml`: intentionally EMPTY coursework placeholders.
-- `environment/pixi.toml` + `environment/pixi.lock`: a separate runnable bootstrap environment.
+- `pixi.toml` + `pixi.lock`: reproducible root `smoke` environment.
+- `.pre-commit-config.yaml`: nbstripout notebook output cleanup hook.
+- `environment/pixi.toml` + `environment/pixi.lock`: earlier bootstrap environment kept as a reference.
 - `figures/`: final figure exports, tracked by Git.
 - `docs/findings.md`: intentionally EMPTY optional working notes; final analysis belongs in the notebook.
 
-B completes the formal root `pixi.toml`, lock file, nbstripout configuration,
-and startup instructions. Other members use those instructions once the formal
-configuration is merged. The optional bootstrap is a reference for B, not the
-completed coursework environment.
-
+The root Pixi environment and nbstripout hook are ready to use with the commands above.
 
 
 ## Setup verification
 
-Verified on 2026-11-03 with Python 3.12.16 on macOS Apple Silicon.
-Checks passed: notebook valid: smoking_is_bad.ipynb; headless PNG rendering; provided CSV readable (no analysis performed); nbstripout clears a disposable notebook; coursework hook remains empty; fresh Jupyter kernel executes disposable Python/pandas cell.
-Other platforms were lock-resolved only. No coursework analysis, answers,
-model training, or Kaggle data download was performed.
+Verified on 2026-11-05 with Pixi on macOS: lock generation and `pixi install --locked -e smoke` completed successfully. Other platforms are lock-resolved and have not been runtime-tested.
 
 ## Original repository instructions (retained)
 
@@ -130,7 +104,7 @@ model training, or Kaggle data download was performed.
 
 # Setup
 
-To install the required packages, run the following command in the terminal (!Your task is to set up the environment using Pixi such that the following works!):
+Install the required packages with Pixi from the repository root:
 
 ```bash
 pixi install
@@ -139,17 +113,16 @@ pixi shell
 
 ## Pre-commit
 
-This repository uses pre-commit to run some checks before each commit. !You have to first create
-the .pre-commit-config.yaml!
+This repository uses pre-commit to remove Jupyter notebook outputs before commits. Install the hook once per local clone:
 
 To install pre-commit, run:
 
 ```bash
-pre-commit install
+pixi run -e smoke pre-commit install
 ```
 
 To run the checks manually, run:
 
 ```bash
-pre-commit run --all-files
+pixi run -e smoke pre-commit run --all-files
 ```
